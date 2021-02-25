@@ -11,7 +11,6 @@ func NewStatementsVisitor() *StatementsVisitor {
 	return visitor
 }
 
-
 func (s *StatementsVisitor) VisitStatements(ctx *StatementsContext) interface{} {
 	statementCtxes := ctx.AllStatement()
 	var statements []*lang.Statement
@@ -45,79 +44,66 @@ func (s *StatementsVisitor) VisitDeclaration(ctx *DeclarationContext) interface{
 	packageCtx := ctx.PackageDeclaration()
 	if packageCtx != nil {
 		visitor := NewPackageDeclarationVisitor()
-		decl := packageCtx.Accept(visitor).(*lang.PackageDecl)
-		if decl != nil {
+		if decl, ok := packageCtx.Accept(visitor).(*lang.PackageDecl); ok {
 			return lang.NewPackageDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
 
 	importCtx := ctx.ImportDeclaration()
 	if importCtx != nil {
 		visitor := NewImportDeclarationVisitor()
-		decl := packageCtx.Accept(visitor).(*lang.ImportDecl)
-		if decl != nil {
+		if decl, ok := packageCtx.Accept(visitor).(*lang.ImportDecl); ok {
 			return lang.NewImportDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
 
 	enumCtx := ctx.EnumDeclaration()
 	if enumCtx != nil {
 		visitor := NewEnumDeclarationVisitor()
-		decl := enumCtx.Accept(visitor).(*lang.EnumDecl)
-		if decl != nil {
+		if decl, ok := enumCtx.Accept(visitor).(*lang.EnumDecl); ok {
 			return lang.NewEnumDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
 
 	structCtx := ctx.StructDeclaration()
 	if structCtx != nil {
 		visitor := NewStructDeclarationVisitor()
-		decl := structCtx.Accept(visitor).(*lang.StructDecl)
-		if decl != nil {
+		if decl, ok := structCtx.Accept(visitor).(*lang.StructDecl); ok {
 			return lang.NewStructDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
 
 	interfaceCtx := ctx.InterfaceDeclaration()
 	if interfaceCtx != nil {
 		visitor := NewInterfaceDeclarationVisitor()
-		decl := interfaceCtx.Accept(visitor).(*lang.InterfaceDecl)
-		if decl != nil {
+		if decl, ok := interfaceCtx.Accept(visitor).(*lang.InterfaceDecl); ok {
 			return lang.NewInterfaceDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
 
-	//typeAliasCtx := ctx.TypeAliasDeclaration()
-	//if typeAliasCtx != nil {
-	//	visitor := NewTypeAliasDeclarationVisitor()
-	//	decl := typeAliasCtx.Accept(visitor).(*lang.TypeAliasDecl)
-	//	if decl != nil {
-	//		return lang.NewTypeAliasDeclStatement(decl)
-	//	} else {
-	//		return nil
-	//	}
-	//}
+	typeAliasCtx := ctx.TypeAliasDeclaration()
+	if typeAliasCtx != nil {
+		visitor := NewTypeAliasDeclarationVisitor()
+		if decl, ok := typeAliasCtx.Accept(visitor).(*lang.TypeAliasDecl); ok {
+			return lang.NewTypeAliasDeclStatement(decl)
+		}
+	}
 
 	functionCtx := ctx.FunctionDeclaration()
 	if functionCtx != nil {
 		visitor := NewFuncDeclarationVisitor()
-		decl := functionCtx.Accept(visitor).(*lang.FuncDecl)
-		if decl != nil {
+		if decl, ok := functionCtx.Accept(visitor).(*lang.FunctionDecl); ok {
 			return lang.NewFunctionDeclStatement(decl)
-		} else {
-			return nil
 		}
 	}
+
+	//variableDeclaration := ctx.VariableDeclaration()
+	//if variableDeclaration != nil {
+	//	visitor := NewValueDeclarationVisitor()
+	//	if decl, ok := variableDeclaration.Accept(visitor).(*lang.ValueDecl); ok {
+	//		return lang.New
+	//	}
+	//}
 
 	return nil
 }

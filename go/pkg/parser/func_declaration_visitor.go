@@ -12,7 +12,7 @@ func NewFuncDeclarationVisitor() *FuncDeclarationVisitor {
 }
 
 func (f *FuncDeclarationVisitor) VisitFunctionDeclaration(ctx *FunctionDeclarationContext) interface{} {
-	decl := &lang.FuncDecl{}
+	decl := &lang.FunctionDecl{}
 
 	nameCtx := ctx.FunctionName()
 	if nameCtx != nil {
@@ -23,14 +23,14 @@ func (f *FuncDeclarationVisitor) VisitFunctionDeclaration(ctx *FunctionDeclarati
 
 	signatureCtx := ctx.FunctionSignature()
 	if signatureCtx != nil {
-		decl.Type = signatureCtx.Accept(f).(*lang.FuncType)
+		decl.Signature = signatureCtx.Accept(f).(*lang.FunctionDecl_Signature)
 	}
 
 	return decl
 }
 
 func (f *FuncDeclarationVisitor) VisitInterfaceMethodDeclaration(ctx *InterfaceMethodDeclarationContext) interface{} {
-	decl := &lang.FuncDecl{}
+	decl := &lang.FunctionDecl{}
 	
 	decl.Document = GetDocument(ctx.Document())
 	decl.Attributes = GetAttributes(ctx.Attributes())
@@ -44,7 +44,7 @@ func (f *FuncDeclarationVisitor) VisitInterfaceMethodDeclaration(ctx *InterfaceM
 
 	signatureCtx := ctx.FunctionSignature()
 	if signatureCtx != nil {
-		decl.Type = signatureCtx.Accept(f).(*lang.FuncType)
+		decl.Signature = signatureCtx.Accept(f).(*lang.FunctionDecl_Signature)
 	}
 
 	return decl
@@ -55,7 +55,7 @@ func (f *FuncDeclarationVisitor) VisitFunctionName(ctx *FunctionNameContext) int
 }
 
 func (f *FuncDeclarationVisitor) VisitFunctionSignature(ctx *FunctionSignatureContext) interface{} {
-	funcType := &lang.FuncType{}
+	funcType := &lang.FunctionDecl_Signature{}
 	
 	parameterCtx := ctx.FunctionParameterClause()
 	if parameterCtx != nil {
@@ -64,7 +64,7 @@ func (f *FuncDeclarationVisitor) VisitFunctionSignature(ctx *FunctionSignatureCo
 
 	resultCtx := ctx.FunctionResult()
 	if resultCtx != nil {
-		funcType.ReturnType = resultCtx.Accept(f).(*lang.NominalType)
+		funcType.Result = resultCtx.Accept(f).(*lang.NominalType)
 	}
 
 	return funcType

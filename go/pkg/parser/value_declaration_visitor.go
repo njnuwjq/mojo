@@ -14,8 +14,8 @@ func NewValueDeclarationVisitor() *ValueDeclarationVisitor {
 	return visitor
 }
 
-func (v *ValueDeclarationVisitor) VisitStructMemberDeclaration (ctx *StructMemberDeclarationContext) interface{} {
-	v.ValueDecl.Name =  GetDeclarationIdentifier(ctx.DeclarationIdentifier())
+func (v *ValueDeclarationVisitor) VisitStructMemberDeclaration(ctx *StructMemberDeclarationContext) interface{} {
+	v.ValueDecl.Name = GetDeclarationIdentifier(ctx.DeclarationIdentifier())
 	v.visitDocuments(ctx.Document(), nil)
 
 	initializerCtx := ctx.Initializer()
@@ -28,7 +28,64 @@ func (v *ValueDeclarationVisitor) VisitStructMemberDeclaration (ctx *StructMembe
 	return v.ValueDecl
 }
 
-func (v *ValueDeclarationVisitor) VisitEnumMember (ctx *EnumMemberContext) interface{} {
+func (v *ValueDeclarationVisitor) VisitVariableDeclaration(ctx *VariableDeclarationContext) interface{} {
+	initializersCtx := ctx.PatternInitializers()
+	if initializersCtx != nil {
+		return initializersCtx.Accept(v)
+	}
+	return nil
+}
+
+func (v *ValueDeclarationVisitor) VisitPatternInitializers(ctx *PatternInitializersContext) interface{} {
+	initializerCtxes := ctx.AllPatternInitializer()
+	var decls []interface{}
+	for _, c := range initializerCtxes {
+		decl := c.Accept(v)
+		if decl != nil {
+			decls = append(decls, decl)
+		}
+	}
+	if len(decls) > 0 {
+		return decls
+	}
+	return nil
+}
+
+func (v *ValueDeclarationVisitor) VisitPatternInitializer(ctx *PatternInitializerContext) interface{} {
+	patternCtx := ctx.Pattern()
+	if patternCtx != nil {
+		if pattern, ok := patternCtx.Accept(v).(*lang.ValueDecl); ok {
+			v.ValueDecl = pattern
+
+			initializerCtx := ctx.Initializer()
+			if initializerCtx != nil {
+				initializerCtx.Accept(v)
+			}
+			return v.ValueDecl
+		}
+	}
+	return nil
+}
+
+func (v *ValueDeclarationVisitor) VisitPattern(ctx *PatternContext) interface{} {
+	identifierPatternCtx := ctx.IdentifierPattern()
+	if identifierPatternCtx != nil {
+		if name, ok := identifierPatternCtx.Accept(v).(string); ok {
+			valueDecl := &lang.ValueDecl{}
+			valueDecl.Name = name
+			valueDecl.Type = GetTypeAnnotation(ctx.TypeAnnotation())
+			return valueDecl
+		}
+	}
+
+	return nil
+}
+
+func (v *ValueDeclarationVisitor) VisitIdentifierPattern(ctx *IdentifierPatternContext) interface{} {
+	return ctx.GetText()
+}
+
+func (v *ValueDeclarationVisitor) VisitEnumMember(ctx *EnumMemberContext) interface{} {
 	v.ValueDecl.Name = ctx.DeclarationIdentifier().GetText()
 	v.visitDocuments(ctx.Document(), nil)
 
@@ -42,7 +99,7 @@ func (v *ValueDeclarationVisitor) VisitEnumMember (ctx *EnumMemberContext) inter
 	return v.ValueDecl
 }
 
-func (v *ValueDeclarationVisitor) VisitFunctionParameter (ctx *FunctionParameterContext) interface{} {
+func (v *ValueDeclarationVisitor) VisitFunctionParameter(ctx *FunctionParameterContext) interface{} {
 	v.ValueDecl.Name = ctx.LabelIdentifier().GetText()
 
 	initializerCtx := ctx.Initializer()
@@ -55,9 +112,9 @@ func (v *ValueDeclarationVisitor) VisitFunctionParameter (ctx *FunctionParameter
 	return v.ValueDecl
 }
 
-func (v *ValueDeclarationVisitor) VisitInitializer (ctx * InitializerContext) interface{} {
+func (v *ValueDeclarationVisitor) VisitInitializer(ctx *InitializerContext) interface{} {
 	if ctx != nil {
-		v.ValueDecl.DefaultValue = GetExpression(ctx.Expression())
+		v.ValueDecl.InitialValue = GetExpression(ctx.Expression())
 	}
 	return false
 }

@@ -30,7 +30,7 @@ func (i *InterfaceDeclarationVisitor) VisitInterfaceDeclaration(ctx *InterfaceDe
 
 	bodyCtx := ctx.InterfaceBody()
 	if bodyCtx != nil {
-		decl.Type.Methods = bodyCtx.Accept(i).([]*lang.FuncDecl)
+		decl.Type.Methods = bodyCtx.Accept(i).([]*lang.FunctionDecl)
 	}
 
 	return decl
@@ -46,14 +46,14 @@ func (i *InterfaceDeclarationVisitor) VisitInterfaceBody(ctx *InterfaceBodyConte
 		return membersCtx.Accept(i)
 	}
 
-	return []*lang.FuncDecl{}
+	return []*lang.FunctionDecl{}
 }
 
 func (i *InterfaceDeclarationVisitor) VisitInterfaceMembers(ctx *InterfaceMembersContext) interface{} {
 	memberCtxes := ctx.AllInterfaceMember()
-	var methods []*lang.FuncDecl
+	var methods []*lang.FunctionDecl
 	for _, memberCtx := range memberCtxes {
-		funcDecl := memberCtx.Accept(i).(*lang.FuncDecl)
+		funcDecl := memberCtx.Accept(i).(*lang.FunctionDecl)
 		if funcDecl != nil {
 			methods = append(methods, funcDecl)
 		}

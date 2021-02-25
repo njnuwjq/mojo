@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	path2 "path"
+	"sort"
 	"strings"
 )
 
@@ -48,10 +49,47 @@ func (p Parser) ParseFile(filename string) (*lang.SourceFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return p.ParseStream(input.InputStream)
+
+	sourceFile, err := p.ParseStream(input.InputStream)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceFile.Name = path2.Base(filename)
+	sourceFile.FullName = reassemblePath(filename, "/")
+	return sourceFile, nil
 }
 
 func (p Parser) ParsePackage(path string) (map[string]*lang.Package, error) {
+	packages, error := p.parsePackage(path)
+	if error != nil {
+		return nil, error
+	}
+
+	p.treePackages(packages)
+	return packages, nil
+}
+
+func (p Parser) treePackages(packages map[string]*lang.Package) {
+	var names []string
+	for key, _ := range packages {
+		names = append(names, key)
+	}
+	sort.Strings(names)
+
+	for i, name := range names {
+		for j := i; j < len(names); j++ {
+			if strings.HasPrefix(names[j], name) && names[j] != name {
+				parent := packages[name]
+				child := packages[names[j]]
+				parent.Children = append(parent.Children, child)
+				child.Parent = parent
+			}
+		}
+	}
+}
+
+func (p Parser) parsePackage(path string) (map[string]*lang.Package, error) {
 	packages := make(map[string]*lang.Package)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -59,14 +97,10 @@ func (p Parser) ParsePackage(path string) (map[string]*lang.Package, error) {
 		return nil, err
 	}
 
-	currentPkgName := strings.TrimPrefix(path, "./")
-	currentPkgName = strings.TrimPrefix(currentPkgName, "../")
-	currentPkgName = strings.ReplaceAll(currentPkgName, "/", ".")
-	currentPkgName = strings.ReplaceAll(currentPkgName, "\\", ".")
-
+	currentPkgName := reassemblePath(path, ".")
 	for _, f := range files {
 		if f.IsDir() {
-			pkgs, err := p.ParsePackage(path2.Join(path, f.Name()))
+			pkgs, err := p.parsePackage(path2.Join(path, f.Name()))
 			if err != nil {
 				return nil, err
 			}
@@ -84,8 +118,35 @@ func (p Parser) ParsePackage(path string) (map[string]*lang.Package, error) {
 				packages[currentPkgName] = &lang.Package{}
 			}
 
+			sourceFile.Package = currentPkgName
 			packages[currentPkgName].SourceFiles = append(packages[currentPkgName].SourceFiles, sourceFile)
+			packages[currentPkgName].Name = path2.Base(path)
+			packages[currentPkgName].FullName = currentPkgName
 		}
 	}
 	return packages, nil
+}
+
+func reassemblePath(path string, connector string) string {
+	if len(path) > 0 {
+		dir := path2.Dir(path)
+		segments := []string{ path2.Base(path) }
+
+		for {
+			base := path2.Base(dir)
+			if len(base) > 0 && base != "." && base != ".." {
+				dir = path2.Dir(dir)
+				segments = append(segments, base)
+			} else {
+				break
+			}
+		}
+
+		for i, j := 0, len(segments)-1; i < j; i, j = i+1, j-1 {
+			segments[i], segments[j] = segments[j], segments[i]
+		}
+		return strings.Join(segments, connector)
+	}
+
+	return ""
 }

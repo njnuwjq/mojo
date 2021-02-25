@@ -16,15 +16,15 @@ func (a *GenericArgumentsVisitor) VisitGenericArgumentClause(ctx *GenericArgumen
 		return argumentList.Accept(a)
 	}
 
-	return []*lang.GenericArgument{}
+	return []*lang.NominalType{}
 }
 
 func (a *GenericArgumentsVisitor) VisitGenericArguments(ctx *GenericArgumentsContext) interface{} {
-	var arguments []*lang.GenericArgument
+	var arguments []*lang.NominalType
 	argumentCtxes := ctx.AllGenericArgument()
 	for _, argumentCtx := range argumentCtxes {
 		visitor := NewGenericArgumentsVisitor()
-		argument := argumentCtx.Accept(visitor).(*lang.GenericArgument)
+		argument := argumentCtx.Accept(visitor).(*lang.NominalType)
 
 		arguments = append(arguments, argument)
 	}

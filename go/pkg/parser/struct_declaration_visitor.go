@@ -26,11 +26,7 @@ func (s *StructDeclarationVisitor) VisitStructDeclaration(ctx *StructDeclaration
 		// error happened
 	}
 
-	genericParameters := ctx.GenericParameterClause()
-	if genericParameters != nil {
-		visitor := NewGenericParametersVisitor()
-		s.StructDecl.GenericParameters = genericParameters.Accept(visitor).([]*lang.GenericParameter)
-	}
+	s.StructDecl.GenericParameters = GetGenericParameters(ctx.GenericParameterClause())
 
 	inheritances := ctx.TypeInheritanceClause()
 	if inheritances != nil {

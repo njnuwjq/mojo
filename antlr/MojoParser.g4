@@ -218,11 +218,11 @@ variableDeclaration
 
 // GRAMMAR OF A TYPE ALIAS DECLARATION
 typeAliasDeclaration
-  : document? (EOL* attributes)? EOL* KEYWORD_TYPE typealiasName genericParameterClause? EOL* typealiasAssignment
+  : document? (EOL* attributes)? EOL* KEYWORD_TYPE typeAliasName genericParameterClause? EOL* typeAliasAssignment
   ;
 
-typealiasName : typeName ;
-typealiasAssignment : assignmentOperator EOL* type_ ;
+typeAliasName : typeName ;
+typeAliasAssignment : assignmentOperator EOL* type_ ;
 
 // GRAMMAR OF A FUNCTION DECLARATION
 functionDeclaration : functionHead functionName genericParameterClause? functionSignature (EOL* functionBody)? ;
@@ -562,7 +562,9 @@ argument_name : labelIdentifier COLON ;
 type_
  : basicType
  | functionType
+ | type_ BANG
  | type_ QUESTION
+ | type_ ELLIPSIS
  ;
 
 basicType

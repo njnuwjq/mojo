@@ -41,7 +41,7 @@ func (t *TypeIdentifierVisitor) VisitTypeIdentifierClause(ctx *TypeIdentifierCla
 	genericArgumentCtx := ctx.GenericArgumentClause()
 	if genericArgumentCtx != nil {
 		visitor := NewGenericArgumentsVisitor()
-		nominalType.GenericArguments = genericArgumentCtx.Accept(visitor).([]*lang.GenericArgument)
+		nominalType.GenericArguments = genericArgumentCtx.Accept(visitor).([]*lang.NominalType)
 	}
 
 	return nominalType
